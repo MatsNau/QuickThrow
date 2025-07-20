@@ -57,7 +57,7 @@ Two players are separated by an impenetrable barrier, each defending their own t
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/quickthrow.git
+git clone https://github.com/MatsNau/QuickThrow
 cd quickthrow
 ```
 
