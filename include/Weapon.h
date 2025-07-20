@@ -9,6 +9,8 @@ private:
     sf::Vector2f velocity;
     bool isFlying;
     Player* holder;
+    Player* lastHolder;  // Neues Feld: Wer hat zuletzt geworfen
+    float throwCooldown; // Neues Feld: Cooldown-Timer
 
 public:
     Weapon(float x, float y);

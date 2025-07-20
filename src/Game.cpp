@@ -142,7 +142,7 @@ void Game::handleEvents() {
                     player1.getHasWeapon() && !player1.getIsControllerPlayer()) {
                     weapon.throwTo(&player1, &player2);
                 }
-                if (event.key.code == sf::Keyboard::RControl && player2.getHasWeapon()) {
+                if (event.key.code == sf::Keyboard::Space && player2.getHasWeapon()) {
                     weapon.throwTo(&player2, &player1);
                 }
 

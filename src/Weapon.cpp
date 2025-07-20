@@ -11,7 +11,8 @@ using namespace Utils;
 /// </summary>
 /// <param name="x">The x-coordinate of the weapon's initial position.</param>
 /// <param name="y">The y-coordinate of the weapon's initial position.</param>
-Weapon::Weapon(float x, float y) : position(x, y), isFlying(false), holder(nullptr) {
+Weapon::Weapon(float x, float y) : position(x, y), isFlying(false), holder(nullptr),
+lastHolder(nullptr), throwCooldown(0.0f) {
     shape.setSize(sf::Vector2f(30, 10));
     shape.setFillColor(sf::Color::Black);
     shape.setOrigin(15, 5);
@@ -23,6 +24,15 @@ Weapon::Weapon(float x, float y) : position(x, y), isFlying(false), holder(nullp
 /// </summary>
 /// <param name="dt">The time elapsed since the last update, in seconds.</param>
 void Weapon::update(float dt) {
+    // Update cooldown timer
+    if (throwCooldown > 0) {
+        throwCooldown -= dt;
+        if (throwCooldown < 0) {
+            throwCooldown = 0;
+            lastHolder = nullptr; // Reset last holder after cooldown
+        }
+    }
+
     if (isFlying) {
         position += velocity * dt;
         shape.setPosition(position);
@@ -66,6 +76,10 @@ void Weapon::throwTo(Player* from, Player* to) {
         holder->setHasWeapon(false);
         holder = nullptr;
 
+        // Merke wer geworfen hat und setze Cooldown
+        lastHolder = from;
+        throwCooldown = 0.3f; // 0.3 Sekunden Cooldown
+
         sf::Vector2f direction = to->getPosition() - position;
         direction = normalize(direction);
         velocity = direction * WEAPON_THROW_SPEED;
@@ -74,13 +88,28 @@ void Weapon::throwTo(Player* from, Player* to) {
 
 /// <summary>
 /// Checks if the weapon can be picked up by the specified player and updates ownership if possible.
+/// Now also allows catching the weapon while it's flying!
 /// </summary>
 /// <param name="player">A reference to the player attempting to pick up the weapon.</param>
 /// <returns>True if the weapon was successfully picked up by the player; otherwise, false.</returns>
 bool Weapon::checkPickup(Player& player) {
-    if (!isFlying && !holder && distance(position, player.getPosition()) < 40) {
+    // Verhindere dass der werfende Spieler die Waffe sofort wieder aufhebt
+    if (lastHolder == &player && throwCooldown > 0) {
+        return false;
+    }
+
+    // Prüfe ob Spieler nah genug an der Waffe ist
+    if (!holder && distance(position, player.getPosition()) < 40) {
+        // Spieler kann die Waffe aufheben, egal ob sie fliegt oder nicht
         holder = &player;
         player.setHasWeapon(true);
+
+        // Wenn die Waffe flog, stoppe den Flug
+        if (isFlying) {
+            isFlying = false;
+            velocity = sf::Vector2f(0, 0);
+        }
+
         return true;
     }
     return false;
